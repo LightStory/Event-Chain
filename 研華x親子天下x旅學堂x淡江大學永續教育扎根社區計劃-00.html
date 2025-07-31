@@ -1,0 +1,2731 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>研華x親子天下x旅學堂x淡江大學永續教育扎根社區計劃</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+        .zoom-controls { display: flex; gap: 0.5rem; }
+        .zoom-btn { 
+            padding: 0.5rem 1rem; 
+            border: 1px solid #4a5568;
+            border-radius: 0.375rem; 
+            background-color: #374151;
+            color: #e2e8f0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .zoom-btn:hover { background-color: #4b5563; }
+        .zoom-btn.active { 
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+        
+        #summary-view { display: none; }
+        
+        .zoom-max #lanes-view, .zoom-mid #lanes-view { display: block; }
+        .zoom-min #lanes-view { display: none; }
+        .zoom-min #summary-view { display: block; }
+        .zoom-max #summary-view, .zoom-mid #summary-view { display: none; }
+
+        .stakeholder-lane { background-color: rgba(30, 41, 59, 0.5); border-radius: 0.5rem; padding: 1.5rem; border: 1px solid rgba(51, 65, 85, 0.5); }
+        .stakeholder-name { margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700; color: #93c5fd; }
+        .cards-container { overflow-x: auto; padding-bottom: 1rem; margin-bottom: -1rem; }
+        .lanes-wrapper { display: flex; align-items: stretch; min-width: 100%; }
+
+        .event-card { flex-shrink: 0; display: flex; flex-direction: column; justify-content: space-between; border-top-width: 4px; border-radius: 0.5rem; }
+        .card-content-wrapper { padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .card-category-info .category-name { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .card-category-info .card-name { font-size: 0.875rem; font-weight: 600; color: #d1d5db; word-break: break-word; }
+        .step-counter { font-size: 0.875rem; font-weight: 700; color: #9ca3af; flex-shrink: 0; margin-left: 0.5rem; }
+        .card-body { margin-top: 0.25rem; }
+        .card-body .title { font-size: 1rem; font-weight: 700; color: white; line-height: 1.25; }
+        .card-body .description { font-size: 0.875rem; color: rgba(209, 213, 219, 0.9); line-height: 1.625; white-space: pre-wrap; word-break: break-word; margin-top: 0.25rem; }
+        .card-footer { padding: 0 1rem 0.5rem; text-align: right; }
+        .footer-text { font-size: 0.75rem; color: #6b7280; }
+
+        .arrow-icon-container { display: flex; align-items: center; flex-shrink: 0; padding: 0 0.5rem; }
+        .arrow-icon { height: 1.5rem; width: 1.5rem; color: #4b5563; }
+        
+        .zoom-max .lanes-wrapper { gap: 8px; }
+        .zoom-max .event-card { width: 18rem; min-height: 11rem; }
+        
+        .zoom-mid .lanes-wrapper { gap: 8px; }
+        .zoom-mid .event-card { width: 5rem; height: 7rem; }
+        .zoom-mid .card-content-wrapper { padding: 0.5rem; }
+        .zoom-mid .card-header { margin-bottom: 0; align-items: stretch; flex-direction: column-reverse; flex-grow: 1; }
+        .zoom-mid .step-counter { text-align: right; }
+        .zoom-mid .card-category-info { display: flex; align-items: center; justify-content: center; text-align: center; flex-grow: 1; }
+        .zoom-mid .category-name { display: none; }
+        .zoom-mid .card-name { font-weight: 600; line-height: 1.2; }
+        .zoom-mid .card-body, .zoom-mid .card-footer { display: none; }
+        .zoom-mid .arrow-icon-container { transform: scale(0.7); }
+
+        .summary-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .summary-row { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background-color: #1e293b; border-radius: 0.5rem; border: 1px solid rgba(71, 85, 105, 0.5); }
+        .summary-row-stakeholder { font-weight: 700; color: #93c5fd; }
+        .summary-row-count { display: flex; align-items: center; gap: 0.5rem; }
+        .summary-row-count-label { color: #cbd5e1; }
+        .summary-row-count-value { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 1.125rem; font-weight: 700; color: white; background-color: #334155; padding: 0.125rem 0.5rem; border-radius: 0.375rem; }
+        
+        /* Tailwind class mapping */
+        .bg-sky-900\/70 { background-color: rgba(8, 51, 68, 0.7); }
+        .text-sky-300 { color: #7dd3fc; }
+        .border-sky-500 { border-color: #0ea5e9; }
+        .bg-emerald-900\/70 { background-color: rgba(4, 47, 46, 0.7); }
+        .text-emerald-300 { color: #6ee7b7; }
+        .border-emerald-500 { border-color: #10b981; }
+        .bg-amber-900\/70 { background-color: rgba(59, 26, 8, 0.7); }
+        .text-amber-300 { color: #fcd34d; }
+        .border-amber-500 { border-color: #f59e0b; }
+        .bg-rose-900\/70 { background-color: rgba(68, 16, 42, 0.7); }
+        .text-rose-300 { color: #fda4af; }
+        .border-rose-500 { border-color: #f43f5e; }
+        .bg-slate-800\/70 { background-color: rgba(30, 41, 59, 0.7); }
+        .text-slate-300 { color: #d1d5db; }
+        .border-slate-500 { border-color: #64748b; }
+    </style>
+
+</head>
+<body class="bg-slate-900 text-slate-200">
+    <header class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4 md:px-8 flex justify-between items-center">
+            
+            <div class="flex-1 flex flex-col items-start gap-1">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" data-zoom-level="0">事件鏈總覽</button>
+                    <button class="zoom-btn" data-zoom-level="1">步驟總覽</button>
+                    <button class="zoom-btn active" data-zoom-level="2">詳細內容</button>
+                </div>
+                <p class="text-xs text-slate-500">產生時間：2025/7/31 下午1:05:18</p>
+            </div>
+
+            <div class="flex-shrink-0 text-center px-4">
+                <h1 class="text-2xl md:text-3xl font-bold text-white">影響力事件鏈 - 匯出版本</h1>
+                <h2 class="text-xl md:text-2xl font-semibold text-slate-300 mt-1">研華x親子天下x旅學堂x淡江大學永續教育扎根社區計劃</h2>
+            </div>
+            
+            <div class="flex-1"></div>
+
+        </div>
+    </header>
+    <main class="container mx-auto px-4 py-8 md:px-8">
+        <div id="content-wrapper">
+            <div id="lanes-view" class="space-y-8">
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">服務科學與管理修課大學生</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">課程(方案)設計</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">課程修習和參與</p>
+                    <p class="description">大學生選修114(1)服務科學與管理，2學分企管系專業選修課，上課時間是每週一下午1:10-3:00，此課程同時為淡江大學專業知能服務學習，學生需要額外服務18小時。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">議題關注</p>
+                    <p class="description">服務科學與管理的專業議題關注服務品質，因此需要導入服務品質管理的方法。課程大綱按照社會實踐當責系統進行模組進度的安排：願景規劃、目標管理、績效設計、實踐行動、成效評估、價值溝通。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">財務支持</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">USR計畫經費支應、知服課程補助</p>
+                    <p class="description">知服課程補助1萬元業務費、1位兼任助教津貼，USR計劃補助額外需要支應的費用大約2萬元</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">修課學生進行分組與團隊建立</p>
+                    <p class="description">修課學生將根據老師指引，全班分為5組，媒合每組配對到一間中/小學的學校班級與活動</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">參與共學</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">學生參與專案共學</p>
+                    <p class="description">修課學生的社會參與程度被定位在L5跨領域課程，需要協力旅學堂的研華專案在大淡水跨學制永續教育扎根社區計劃中，與觸及的利害關係人進行共學</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">內控調適</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">小組共編簡報進行團隊協作</p>
+                    <p class="description">修課學生以「組」為單位，被老師要求開設「小組共編簡報」，記錄課程中以及專題中需要記錄的事情，並以此在課堂上與老師溝通，並定期與利害關係人進行進度校準</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">場域服務</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">場域服務</p>
+                    <p class="description">每組學生會配對到大淡水跨學制聯盟的一間學校，並依指定日期出隊服務。服務的形式是參與到班級校外教學的走讀活動之中，形成青童共學，活動中進行文字、照片的紀錄，並在活動結束/或是班級教師指定方式進行公版問卷的發放。活動後，針對問卷中的該場活動資料，進行資料整理與分析。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">價值溝通</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">走讀活動價值溝通</p>
+                    <p class="description">每組滬青服科團隊需完成一篇「參與式學習網誌」，預計完成5篇。參與式學習網誌有四大個內容模組：標題與背景區、活動紀實區、影響力數據分析區、利害關係人心得區。上架好生活官網的滬青學專區，作為後續溝通特定與不特定利害關係人之用。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">行動(成果)展演</p>
+                    </div>
+                    <p class="step-counter">步驟 9</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">聯合發表會出席與報告</p>
+                    <p class="description">參與12/6由親子天下舉辦的聯合發表會，淡江大學團隊針對成效評估協力行動進行5分鐘報告</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 10</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">大學生素養發展</p>
+                    <p class="description">此處採用淡江大學社會參與課程學教影響力問卷進行五大素養的調查，五大素養包括：專業學習力、流程設計力、溝通協作力、參與實踐力、同理反思力</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">激勵賦能</p>
+                    </div>
+                    <p class="step-counter">步驟 11</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">激勵制度</p>
+                    <p class="description">&quot;激勵制度1：旅學堂授予參與專案的學生感謝狀</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">淡江大學USR教師涂敏芬</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">議題關注</p>
+                    <p class="description">加入這個專案的起心動念是因為我關心：教育創新、服務設計、影響力管理、社區陪伴</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">參與共學</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">參與共學</p>
+                    <p class="description">以支援角色(影響力評估工作)參與到「大淡水跨學制永續教育扎根社區計劃」，帶著「知行煥新影響力設計工具」的開發專案，進行原型測試，透過每次工作坊的互動與共學，在做中學優化工具本身，也測試製品介入的方式</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">內控調適</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">總控文件進行內控</p>
+                    <p class="description">在這個專案中，在專案端協助啟動「Google Doc共編紀錄」，目前權限開放給旅學堂與親子天下團隊，將此專案歷程進行記錄。另外，在課程端，與修課學生透過「學教紀錄」進行課程內控</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">財務支持</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">財務支持</p>
+                    <p class="description">旅學堂成效評估工作費</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">問題解決</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">問題解決</p>
+                    <p class="description">在專案執行過程中，導入「知行煥新影響力設計工具組」，與旅學堂和她的執行團隊進行工作坊的共識凝聚，協助有效能進行團隊建立</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">利害關係人議合</p>
+                    <p class="description">(1)透過加入Line群組，隨時更新專案進度。(2)根據需求，召開/參與工作坊，在工作坊就專案執行方向、內容與進度，進行確認</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">課程(方案)設計</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">課程設計</p>
+                    <p class="description">設計114(1)服務科學與管理的課程大綱，2學分選修課，亦獲得淡江大學專業知能服務學習課程補助。課程根據社會參與程度設定為「L5跨領域課程」，領導學生團隊透過課程參與社會實踐專案。課程中，會搭配一位課程助教，以及研究員許程閔</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">交流合作</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">場域交流與合作</p>
+                    <p class="description">旅學堂在專案中持續與大淡水跨學制的五間學校討論走讀內容，補充該校的校本課程，根據需求與自身時間，彈性參與專案執行過程中的討論會議與交流活動</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">場域服務</p>
+                    </div>
+                    <p class="step-counter">步驟 9</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">場域服務</p>
+                    <p class="description">(1)課程的部分，帶領服務科學與管理的5組學生參與5場走讀活動，引導他們完成5篇參與式學習網誌。(2)計劃的部分，編製大淡水跨學制公版問卷，進行利害關係人的調查。(3)回收數據之後，進行數據分析。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 10</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">在12/6行動展演的場合進行多元利害關係人的議合行動</p>
+                    <p class="description">帶領學生參與12/6的行動展演，進行5分鐘的報告，並觀察整體專案的後續可能發展方向</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 11</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">教師素養發展</p>
+                    <p class="description">透過L5跨領域課程的操作，進行社會實踐與教學創新，同步優化影響力設計工具組</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">行動(成果)展演</p>
+                    </div>
+                    <p class="step-counter">步驟 12</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">影響力數據展演</p>
+                    <p class="description">就整體大淡水跨學制永續教育扎根社區專案的影響力數據進行分析</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">價值溝通</p>
+                    </div>
+                    <p class="step-counter">步驟 13</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">價值溝通</p>
+                    <p class="description">班級課程完成5篇參與式學習網誌，但身為USR課程的開課老師，需在年底完成一篇預計刊載在淡江大學USR年報的總論文章，進行此專案的價值溝通</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">大淡水跨學制：教師</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">交流合作</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">參與說明會</p>
+                    <p class="description">透過說明會瞭解計畫內容，並評估自己參與的可能性</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">永續教育、扎根社區、PBL</p>
+                    <p class="description">透過本計畫在校本課程中將永續教育、PBL的資源帶入校園</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">Yes  I do 、加line</p>
+                    <p class="description">隨時留意line群組訊息，與執行單位保持密切聯繫</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">參與共學</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">參與工作坊</p>
+                    <p class="description">參與線上增能工作坊，瞭解PBL課程的專業知識與課程設計理念</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">課程(方案)設計</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">配課</p>
+                    <p class="description">配合執行單位設計課程教案並規劃講師入校授課及走讀的時間</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">內控調適</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">配課</p>
+                    <p class="description">與執行單位旅學堂協調討論後，確定講師入校的課程時間與課程執行方式，以及需配合的事項</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">場域服務</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">配合旅學堂一場</p>
+                    <p class="description">配合旅學堂進行校外走讀教學的</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">行動(成果)展演</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">12/6成果發表</p>
+                    <p class="description">成果發表前訓練學生代表的口語表達能，並帶領學生完成成果發表的簡報與作品</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 9</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">發展學生素養</p>
+                    <p class="description">透過課程、走讀，設計學習單，發展學生發現問題、解決問題的素養</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">價值溝通</p>
+                    </div>
+                    <p class="step-counter">步驟 10</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">課程KPI</p>
+                    <p class="description">發展出優良的課程方案，成為可複製的教學模式</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">大淡水跨學制：班級學生（小學中年級＆國中）</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">課程(方案)設計</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">課程參與</p>
+                    <p class="description">參與教師設計的PBL課程</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">永續教育、扎根社區、PBL</p>
+                    <p class="description">經由教師的課程設計認識並瞭解課程內容中所關注的議題</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">參與共學</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">在地學習、一場走讀</p>
+                    <p class="description">參與校外走讀課程，認識在地文史與社區環境</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">問題解決</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">學習單反思</p>
+                    <p class="description">完成課程學習單，並從提問中反思，寫出自己的觀點與看法</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">個人省思、社會關懷力</p>
+                    <p class="description">個人省思與在地連結，思考能為自己的社區做些什麼？為什麼要做？</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">行動(成果)展演</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">12/6成果發表</p>
+                    <p class="description">配合課程內容分組討論呈現學習成果的方式，並完成學習成果的作品或簡報。推派學生代表，進行成果發表的演練</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">課程回饋問卷</p>
+                    <p class="description">依照問卷提問如實作答，讓講師瞭解學生的想法與心得</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">學生代表問卷</p>
+                    <p class="description">透過問卷填答，瞭解有參與成發的學生代表與其他學生有何不同的素養發展</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">旅學堂工作室</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">問題解決</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">旅學堂女路五力培養</p>
+                    <p class="description">&quot;指派3位核心女路導覽員參與本專案</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">協助專案內/外部溝通與PBL知能培力&quot;</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">４－１交流合作</p>
+                    <p class="description">&quot;親子天下提供本專案並說明</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">詢問旅學堂是否有意願加入協助北區推動&quot;</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">&quot;電話與Line討論</p>
+                    <p class="description">並相約一次實體見面&quot;</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">關係識別</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">&quot;選擇北區淡水國中小五校</p>
+                    <p class="description"> 淡江大學影響力團隊</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">組織北區專案團隊，釐清各角色主要任務</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">３－１議題關注</p>
+                    <p class="description">永續教育社區札根</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">是</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">１－４內控調適</p>
+                    <p class="description">&quot;總控表</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">&quot;與涂老師共編專案總控表</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title"> 組織專案小組&quot;</p>
+                    <p class="description">是</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">共備小組（PBL+在地文史）</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">&quot;參加工作坊</p>
+                    <p class="description"> 各類相關會議/課程&quot;</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 9</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">取得共識</p>
+                    <p class="description">&quot;加入專案Line群組</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">是</p>
+                    </div>
+                    <p class="step-counter">步驟 10</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">２－１課程(方案)設計</p>
+                    <p class="description">五校課程，設計5節課內容與預期成效</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">是</p>
+                    </div>
+                    <p class="step-counter">步驟 11</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">２－２參與共學</p>
+                    <p class="description">影響力管理課程、吳老師在地文史</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">是</p>
+                    </div>
+                    <p class="step-counter">步驟 12</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">３－２場域服務</p>
+                    <p class="description">安排淡水區戶外走讀（對接社區問題）</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">觀察現象&quot;</p>
+                    </div>
+                    <p class="step-counter">步驟 13</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">是</p>
+                    <p class="description">４－４價值溝通</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">受邀擔任外部委員，有機會針對專案介紹旅學堂在專案扮演的角色與價值</p>
+                    </div>
+                    <p class="step-counter">步驟 14</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">是</p>
+                    <p class="description">２－３素養發展</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">&quot;每堂課做紀錄</p>
+                    </div>
+                    <p class="step-counter">步驟 15</p>
+                </div>
+                <div class="card-body">
+                    <p class="title"> 錄製影音或學習成果&quot;</p>
+                    <p class="description">是</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">旅學堂營收，女力接案量</p>
+                    </div>
+                    <p class="step-counter">步驟 16</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">領取本案由親子天下委託旅學堂進行專案的服務費</p>
+                    <p class="description">是</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">旅學堂在地知識人才庫質與量的提升</p>
+                    </div>
+                    <p class="step-counter">步驟 17</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">提供旅學堂職涯進階的未來可能性</p>
+                    <p class="description">否</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">旅學堂執行團隊</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">提升女路五力</p>
+                    <p class="description">透過執行本專案，提升團隊的五大能力及成長</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">議題關注</p>
+                    <p class="description">執行團隊長期關注教育與在地文化的發展。本專案能讓我們更聚焦在社區文史，永續教育，PBL（問題導向學習），將理念落實於日常行動中，讓學習扎根、社區共好。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">參與共學</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">參與共學</p>
+                    <p class="description">&quot;參加由親子天下所開的線上工作坊；</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">與吳老師討論每間學校的教案所需的文史範圍，並如何轉譯成適合學生程度的內容</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">課程設計</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">與五校分別討論各自的教案</p>
+                    <p class="description">是</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">財務支持</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">財務支持</p>
+                    <p class="description">購買教案所需之服裝道具</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">是</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">３－２場域服務</p>
+                    <p class="description">場域服務</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">入校執行及五場走讀執行</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">是</p>
+                    <p class="description">１－４內控調適</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">每個行動方案的文字及照片紀錄；活動中文字照片的紀錄；活動後的觀察</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">是</p>
+                    <p class="description">２－４行動(成果)展演</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">參與12/6由親子天下舉辦的聯合發表會</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">是</p>
+                    <p class="description">１－３激勵賦能</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">問卷調查及自我評估</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">是</p>
+                    <p class="description">３－４經濟促進</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-slate-500 bg-slate-800/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-slate-300">未知</p>
+                        <p class="card-name">結案後，收到專案執行費</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">否</p>
+                    <p class="description">無說明</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">大淡水跨學制：學校</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">激勵賦能</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">教學創新</p>
+                    <p class="description">認同本專案可帶來教學創新</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">議題關注</p>
+                    <p class="description">符合學校教學目標:永續教育，社區文化，採用PBL新的教學方式</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">關係識別</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">關係識別</p>
+                    <p class="description">對教師說明計畫後，協調出有意願參與的教師</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">財務支持</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">計畫經費支應</p>
+                    <p class="description">親子天下會補助一校三萬元</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">關係議合</p>
+                    <p class="description">取得校內共識，確認老師及如何配合本專案執行，達成成果</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">產學合作發展</p>
+                    <p class="description">產學合作有助學校引入實務資源，提升教學多元性，強化學生學習動機與職涯探索。透過與在地社群連結，促進課程在地化，並培養跨域能力與問題解決力，豐富學校教育內涵。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">行動(成果)展演</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">成果展演</p>
+                    <p class="description">派教師及代表學生出席12/6成發會</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">價值溝通</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">價值溝通</p>
+                    <p class="description">獲得淡江大學滬青服科團隊提供五篇網誌內容，提供學校另外一種紀錄觀點</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">問題解決</p>
+                    </div>
+                    <p class="step-counter">步驟 9</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">校本課發展</p>
+                    <p class="description">累積案例與成果，有助招生與社會形象經營。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">課程(方案)設計</p>
+                    </div>
+                    <p class="step-counter">步驟 10</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">複現化</p>
+                    <p class="description">透過教師將此教案完成，可成為學校特色課程的一部分，將教案模組化、課程化，能使學校形成具代表性的特色課程。隨著每次活動成果的累積，學校能建立清晰的案例資料，便於對外展示，有助吸引學生報名、爭取資源、強化學校品牌形象，形成良性循環。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">研華(出資方)</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">議題關注</p>
+                    <p class="description">研華透過行動(Action)、創新(Creativity)、團隊合作(Teamwork)，結合PBL (專題式學習)，幫助學生從校園走入社區，發掘並解決真實問題，實踐SDGs (聯合國永續發展目標)</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">關係識別</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">關係識別</p>
+                    <p class="description">與親子天下攜手推動</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">財務支持</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">贊助資金</p>
+                    <p class="description">100萬(每校3萬)</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">內控調適</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">定期開會</p>
+                    <p class="description">與親子天下定期開會</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">價值溝通</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">價值溝通</p>
+                    <p class="description">12/6成發會，完成學生從校園走入社區，發掘並解決真實問題，實踐SDGs (聯合國永續發展目標)，培養學習者的問題解決能力、跨域合作精神與社會責任感。</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">問題解決</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">永續報告書、媒體曝光</p>
+                    <p class="description">本次活動寫成永續報告書，研華也獲得媒體曝光</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    
+        <div class="stakeholder-lane">
+            <h3 class="stakeholder-name">親子天下</h3>
+            <div class="cards-container">
+                <div class="lanes-wrapper">
+                    
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">議題關注</p>
+                    </div>
+                    <p class="step-counter">步驟 1</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">議題關注</p>
+                    <p class="description">親子天下關注永續教育扎根社區與PBL</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">交流合作</p>
+                    </div>
+                    <p class="step-counter">步驟 2</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">交流合作</p>
+                    <p class="description">親子天下與研華和業師共同合作實踐以PBL專題式學習落實SDGs</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">財務支持</p>
+                    </div>
+                    <p class="step-counter">步驟 3</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">廠商贊助</p>
+                    <p class="description">研華贊助100萬</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">關係識別</p>
+                    </div>
+                    <p class="step-counter">步驟 4</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">與其他機構合作</p>
+                    <p class="description">找旅學堂參與本次計畫</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">關係議合</p>
+                    </div>
+                    <p class="step-counter">步驟 5</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">關係議和</p>
+                    <p class="description">旅學堂規劃本次工作坊，親子天下確認是否適合本次計畫</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">內控調適</p>
+                    </div>
+                    <p class="step-counter">步驟 6</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">定期開會</p>
+                    <p class="description">定期與旅學堂開會，並完成計畫書</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">行動(成果)展演</p>
+                    </div>
+                    <p class="step-counter">步驟 7</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">成果展演</p>
+                    <p class="description">12/6成發</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-emerald-500 bg-emerald-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-emerald-300">人才培育</p>
+                        <p class="card-name">素養發展</p>
+                    </div>
+                    <p class="step-counter">步驟 8</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">素養發展</p>
+                    <p class="description">計畫完成PBL得以獲得擴展</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-rose-500 bg-rose-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-rose-300">夥伴關係</p>
+                        <p class="card-name">價值溝通</p>
+                    </div>
+                    <p class="step-counter">步驟 9</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">價值溝通</p>
+                    <p class="description">成發會結束後，被邀請的30間學校將會討論要不要加入下一次計畫</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">問題解決</p>
+                    </div>
+                    <p class="step-counter">步驟 10</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">問題解決</p>
+                    <p class="description">交出計劃書，完成研華專案</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-amber-500 bg-amber-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-amber-300">主題共融</p>
+                        <p class="card-name">經濟促進</p>
+                    </div>
+                    <p class="step-counter">步驟 11</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">曝光度增加</p>
+                    <p class="description">透過網誌及媒體曝光讓親子天 下的曝光度增加</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+    <div class="arrow-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </div>
+
+        <div class="event-card border-sky-500 bg-sky-900/70">
+            <div class="card-content-wrapper">
+                <div class="card-header">
+                    <div class="card-category-info">
+                        <p class="category-name text-sky-300">計畫治理</p>
+                        <p class="card-name">激勵賦能</p>
+                    </div>
+                    <p class="step-counter">步驟 12</p>
+                </div>
+                <div class="card-body">
+                    <p class="title">激勵赴能</p>
+                    <p class="description">專案成功，並未來也獲得2.0 3.0的專案</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="footer-text">靜態匯出版本</span>
+            </div>
+        </div>
+    
+                </div>
+            </div>
+        </div>
+    </div>
+            <div id="summary-view">
+    <div class="summary-list">
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">服務科學與管理修課大學生</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">11</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">淡江大學USR教師涂敏芬</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">13</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">大淡水跨學制：教師</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">10</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">大淡水跨學制：班級學生（小學中年級＆國中）</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">8</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">旅學堂工作室</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">17</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">旅學堂執行團隊</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">3</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">與吳老師討論每間學校的教案所需的文史範圍，並如何轉譯成適合學生程度的內容</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">8</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">大淡水跨學制：學校</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">10</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">研華(出資方)</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">6</span>
+                </div>
+            </div>
+        
+            <div class="summary-row">
+                <span class="summary-row-stakeholder">親子天下</span>
+                <div class="summary-row-count">
+                    <span class="summary-row-count-label">總步數:</span>
+                    <span class="summary-row-count-value">12</span>
+                </div>
+            </div>
+        
+    </div>
+    </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const zoomButtons = document.querySelectorAll('.zoom-btn');
+            const contentWrapper = document.getElementById('content-wrapper');
+            const zoomLevels = ['zoom-min', 'zoom-mid', 'zoom-max'];
+            
+            function setZoom(levelIndex) {
+                const newClass = zoomLevels[levelIndex];
+                
+                let newClassName = contentWrapper.className.split(' ').filter(c => !zoomLevels.includes(c)).join(' ');
+                contentWrapper.className = newClassName + ' ' + newClass;
+
+                zoomButtons.forEach((btn, index) => {
+                    if (index === levelIndex) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            zoomButtons.forEach((btn, index) => {
+                btn.addEventListener('click', () => setZoom(index));
+            });
+
+            // Set initial active button based on the active class in HTML
+            const initiallyActiveButton = document.querySelector('.zoom-btn.active');
+            const initialIndex = Array.from(zoomButtons).indexOf(initiallyActiveButton);
+            if (initialIndex !== -1) {
+              setZoom(initialIndex);
+            } else {
+              setZoom(2); // Default to max view
+            }
+        });
+    </script>
+
+</body>
+</html>
+    
